@@ -691,6 +691,10 @@ public static class KaliLinuxToolset
 docker build -t kali-mcp-server .
 ```
 
+### Restart the MCP server  
+
+In `mcp.json` restart the kali-mcp-server MCP server  
+
 ### Use the following MCP tools to manage the Kali Docker container
 ```
 kali-container-status
