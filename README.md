@@ -25,6 +25,8 @@ mcp.json
                 "run",
                 "--rm",
                 "-i",
+                "--user",
+                "root",
                 "-v",
                 "/var/run/docker.sock:/var/run/docker.sock",
                 "kali-mcp-server"
@@ -41,7 +43,7 @@ mcp.json
             "type": "stdio"
         }
     }
-}
+}   
 ```
 
 ### Install dotnet MCP libraries
@@ -50,12 +52,6 @@ cd <project name>
 dotnet add package ModelContextProtocol --version 0.3.0-preview.4
 dotnet add package Microsoft.Extensions.Hosting
 ```
-
-### Initialize docker
-```bash
-docker init
-```
-Accept defaults for all choices
 
 ### Modify Program.cs
 program.cs
@@ -192,15 +188,48 @@ public static class KaliLinuxToolset
 }
 ```
 
+### Initialize Docker
+```bash
+docker init
+```
+Accept defaults for all choices  
+
 ### Project Structure  
 ```
 .vscode
 │   └── mcp.json
 ├── Program.cs
-├── README.md
+├── DockerFile
 ├── <project name>.csproj
 └── Tools
     └── KaliLinuxToolset.cs
+```
+
+### Modify DockerFile  
+Install Docker CLI inside of the Docker container (inception)  
+
+Replace these lines in DockerFile  
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS final
+WORKDIR /app
+```
+
+with
+```dockerfile
+FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
+WORKDIR /app
+
+ARG DOCKER_CLI_VERSION=27.1.1
+WORKDIR /app
+
+# Install Docker CLI
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl tar \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_CLI_VERSION}.tgz" -o docker.tgz \
+    && tar -xzf docker.tgz --strip-components=1 -C /usr/local/bin docker/docker \
+    && rm -rf docker docker.tgz
 ```
 
 ### Containerize dotnet app  
@@ -221,5 +250,5 @@ Click "Start" next to "kali-mcp-server" MCP server in mcp.json
 
 ### Start new CoPilot chat
 ```
-Hi, copilot. Provide the output of kali-exec ls
+Hi, copilot. Return the exact output of kali-exec ls
 ```
