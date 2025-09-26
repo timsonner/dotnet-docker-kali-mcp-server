@@ -1,0 +1,27 @@
+{
+    "servers": {
+        "kali-mcp-server": {
+            "command": "docker",
+            "args": [
+                "run",
+                "--rm",
+                "-i",
+                "--user",
+                "root",
+                "-v",
+                "/var/run/docker.sock:/var/run/docker.sock",
+                "kali-mcp-server"
+            ],
+            "type": "stdio"
+        },
+        "MCP_DOCKER": {
+            "command": "docker",
+            "args": [
+                "mcp",
+                "gateway",
+                "run"
+            ],
+            "type": "stdio"
+        }
+    }
+}
