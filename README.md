@@ -200,11 +200,11 @@ public static class KaliLinuxToolset
 ├── README.md
 ├── <project name>.csproj
 └── Tools
-    └── KaliLinuxtoolset.cs
+    └── KaliLinuxToolset.cs
 ```
 
 ### Containerize dotnet app  
-```
+```bash
 docker build -t kali-mcp-server .
 ```
 
