@@ -1,5 +1,45 @@
 # dotnet-docker-kali-mcp-server
-VS Code client runs commands in Kali docker image using "kali-exec" MCP server
+VS Code client runs commands as root in Kali docker image using "kali-exec" MCP server
+
+# Quick Start  
+
+### Pull kali Docker image  
+```bash
+docker pull docker.io/kalilinux/kali-rolling
+```
+
+### Clone repo
+```
+git clone https://github.com/timsonner/dotnet-docker-kali-mcp-server.git
+cd KaliMCP
+```
+
+### Install dotnet MCP libraries
+```bash
+dotnet add package ModelContextProtocol --version 0.3.0-preview.4
+dotnet add package Microsoft.Extensions.Hosting
+```
+
+### Containerize the app
+```
+docker build -t kali-mcp-server .
+```
+
+### Connect VS Code client to MCP server  
+```bash
+docker mcp client connect vscode
+```
+
+### Start MCP server  
+Click "Start" next to "kali-mcp-server" MCP server in mcp.json
+
+### Start new CoPilot chat
+```
+Hi, copilot. Run this command in terminal "docker run --rm -it -p 80:80 vulnerables/web-dvwa
+" Once that completes, perform sqlmap against host.docker.internal:80 using kali-exec.
+```
+
+# Manual Project Creation (not Quick Start)
 
 ### Pull kali Docker image  
 ```bash
@@ -705,5 +745,6 @@ kali-exec
 
 ### Now u can haz teh hax
 ```
-Hi, Copilot! Let's install nmap and run an nmap scan on apple.com using kali-exec
+Hi, copilot. Run this command in terminal "docker run --rm -it -p 80:80 vulnerables/web-dvwa
+" Once that completes, perform sqlmap against host.docker.internal:80 using kali-exec.
 ```
