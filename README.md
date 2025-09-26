@@ -259,6 +259,8 @@ One may have notices the above code interacts with a non-persistent Kali docker 
 
 The following implimentation of `KaliLinuxToolset.cs` communicates with a persistent Kali Docker image, so installed tools persist through the chat session.  
 
+### Modify KaliLinuxToolset.md  
+
 KaliLinuxToolset.cs
 ```c#
 using System.ComponentModel;
@@ -351,6 +353,67 @@ public static class KaliLinuxToolset
         await EnsureContainerRunningAsync(dockerImage, containerNameToUse, cancellationToken);
         
         return $"Container '{containerNameToUse}' has been restarted successfully.";
+    }
+
+    [McpServerTool(Name = "kali-container-stop"), Description("Stop the persistent Kali Linux container to free up system resources.")]
+    public static async Task<string> StopContainerAsync(
+        [Description("The container name to stop. Defaults to kali-mcp-persistent.")] string? containerName,
+        [Description("Whether to also remove the container after stopping. If false, the container can be restarted later. Defaults to false.")] bool removeContainer = false,
+        CancellationToken cancellationToken = default)
+    {
+        string containerNameToUse = string.IsNullOrWhiteSpace(containerName) ? DefaultContainerName : containerName;
+
+        // Check if container exists first
+        if (!ContainerExists(containerNameToUse))
+        {
+            return $"Container '{containerNameToUse}' does not exist.";
+        }
+
+        // Check if container is running
+        bool wasRunning = IsContainerRunning(containerNameToUse);
+        
+        if (!wasRunning)
+        {
+            if (removeContainer)
+            {
+                await RemoveContainerAsync(containerNameToUse, cancellationToken);
+                return $"Container '{containerNameToUse}' was already stopped and has been removed.";
+            }
+            return $"Container '{containerNameToUse}' is already stopped.";
+        }
+
+        // Stop the container
+        var stopPsi = new ProcessStartInfo("docker")
+        {
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+        stopPsi.ArgumentList.Add("stop");
+        stopPsi.ArgumentList.Add(containerNameToUse);
+
+        using var stopProcess = new Process { StartInfo = stopPsi };
+        if (!stopProcess.Start())
+        {
+            throw new InvalidOperationException("Failed to start the Docker process.");
+        }
+
+        await stopProcess.WaitForExitAsync(cancellationToken);
+        
+        if (stopProcess.ExitCode != 0)
+        {
+            string error = await stopProcess.StandardError.ReadToEndAsync(cancellationToken);
+            throw new InvalidOperationException($"Failed to stop container: {error}");
+        }
+
+        // Optionally remove the container
+        if (removeContainer)
+        {
+            await RemoveContainerAsync(containerNameToUse, cancellationToken);
+            return $"Container '{containerNameToUse}' has been stopped and removed successfully.";
+        }
+
+        return $"Container '{containerNameToUse}' has been stopped successfully. Use kali-exec to restart it automatically, or use kali-container-restart for manual restart.";
     }
 
     private static async Task EnsureContainerRunningAsync(string dockerImage, string containerName, CancellationToken cancellationToken)
@@ -512,18 +575,32 @@ public static class KaliLinuxToolset
         }
 
         // Remove the container
+        await RemoveContainerAsync(containerName, cancellationToken);
+    }
+
+    private static async Task RemoveContainerAsync(string containerName, CancellationToken cancellationToken)
+    {
         var rmPsi = new ProcessStartInfo("docker")
         {
+            RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
         };
         rmPsi.ArgumentList.Add("rm");
         rmPsi.ArgumentList.Add(containerName);
 
-        using var rmProcess = Process.Start(rmPsi);
-        if (rmProcess != null)
+        using var rmProcess = new Process { StartInfo = rmPsi };
+        if (!rmProcess.Start())
         {
-            await rmProcess.WaitForExitAsync(cancellationToken);
+            throw new InvalidOperationException("Failed to start the Docker process.");
+        }
+
+        await rmProcess.WaitForExitAsync(cancellationToken);
+        
+        if (rmProcess.ExitCode != 0)
+        {
+            string error = await rmProcess.StandardError.ReadToEndAsync(cancellationToken);
+            throw new InvalidOperationException($"Failed to remove container: {error}");
         }
     }
 
@@ -607,4 +684,22 @@ public static class KaliLinuxToolset
         }
     }
 }
+```
+
+### Containerize the app  
+```
+docker build -t kali-mcp-server .
+```
+
+### Use the following MCP tools to manage the Kali Docker container
+```
+kali-container-status
+kali-container-restart
+kali-container-stop
+kali-exec
+```
+
+### Now u can haz teh hax
+```
+Hi, Copilot! Let's install nmap and run an nmap scan on apple.com using kali-exec
 ```
