@@ -1,4 +1,3 @@
-
 # Kali docker image setup
 
 ### Start container with TUN device enabled for using a VPN
