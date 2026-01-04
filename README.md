@@ -1,3 +1,21 @@
+# Don't use in production.
+
+edit:
+
+This was my first go at this and it implimented Docker DOOD architecture which binds to the hosts docker.socket, which gives the container control of the host's docker daemon which isn't great for security, but would be great for persistence, especially if the container is burried multiple containers deep as we only have visibility on the outer containers.
+
+Use my newer repo if you want agentic AI pentesting with a Kali docker container.
+
+https://github.com/timsonner/kali-mcp-server
+
+Use this repo as a basis for learning or persistence mechanisms or a base for whatever.
+
+The new new is waaaay better.
+
+01/04/2026 
+
+the chat-kitties go meow
+
 # dotnet-docker-kali-mcp-server
 VS Code client runs commands as root in Kali docker image using "kali-exec" MCP server
 
